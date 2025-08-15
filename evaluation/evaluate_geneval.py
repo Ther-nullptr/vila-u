@@ -323,31 +323,53 @@ def parse_spatial_relations_from_prompt(prompt_text, objects):
 def generate_images_vila_u(model, prompts, output_dir, cfg_scale=3.0, generation_nums=1):
     """
     Generate images using VILA-U model for GenEval prompts
+    Creates folder structure: <output_dir>/<prompt_idx>/samples/<sample_idx>.png
     """
     print(f"Generating images with VILA-U model...")
     
     os.makedirs(output_dir, exist_ok=True)
     
-    for prompt_info in tqdm(prompts, desc="Generating images"):
-        prompt_id = prompt_info['id']
+    for prompt_idx, prompt_info in enumerate(tqdm(prompts, desc="Generating images")):
         prompt_text = prompt_info['prompt']
         
+        # Create folder structure: 00000/, 00001/, etc.
+        prompt_folder = os.path.join(output_dir, f"{prompt_idx:05d}")
+        samples_folder = os.path.join(prompt_folder, "samples")
+        os.makedirs(samples_folder, exist_ok=True)
+        
+        # Create metadata.jsonl with the current prompt info
+        metadata_path = os.path.join(prompt_folder, "metadata.jsonl")
+        with open(metadata_path, 'w') as f:
+            # Write the original JSONL line
+            original_line = {
+                "tag": prompt_info['tag'],
+                "include": [],
+                "prompt": prompt_info['prompt']
+            }
+            # Reconstruct include field from objects and counts
+            for obj in prompt_info['objects']:
+                count = prompt_info['object_counts'].get(obj, 1)
+                original_line["include"].append({"class": obj, "count": count})
+            
+            json.dump(original_line, f)
+            f.write('\n')
+        
         try:
-            # Generate image using VILA-U
+            # Generate images using VILA-U
             response = model.generate_image_content(prompt_text, cfg_scale, generation_nums)
             
-            # Save generated images
+            # Save generated images in samples folder
             for i in range(response.shape[0]):
                 image = response[i].permute(1, 2, 0)
                 image = image.cpu().numpy().astype(np.uint8)
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
                 
-                # Save with prompt ID
-                output_path = os.path.join(output_dir, f"{prompt_id}_{i}.png")
-                cv2.imwrite(output_path, image)
+                # Save as 0000.png, 0001.png, etc.
+                sample_path = os.path.join(samples_folder, f"{i:04d}.png")
+                cv2.imwrite(sample_path, image)
         
         except Exception as e:
-            print(f"Error generating image for prompt {prompt_id}: {e}")
+            print(f"Error generating image for prompt {prompt_idx}: {e}")
             continue
 
 
@@ -447,24 +469,24 @@ def main():
     # Track results by tag category
     tag_results = {}
     
-    for prompt_info in tqdm(prompts, desc="Evaluating GenEval prompts"):
-        prompt_id = prompt_info['id']
+    for prompt_idx, prompt_info in enumerate(tqdm(prompts, desc="Evaluating GenEval prompts")):
         tag = prompt_info['tag']
         
-        # Look for generated image
+        # Look for generated images in new folder structure
+        prompt_folder = os.path.join(image_output_dir, f"{prompt_idx:05d}")
+        samples_folder = os.path.join(prompt_folder, "samples")
+        
+        # Find the first available image in samples folder
         image_path = None
-        for i in range(args.generation_nums):
-            potential_path = os.path.join(image_output_dir, f"{prompt_id}_{i}.png")
-            if os.path.exists(potential_path):
-                image_path = potential_path
-                break
+        if os.path.exists(samples_folder):
+            for i in range(args.generation_nums):
+                potential_path = os.path.join(samples_folder, f"{i:04d}.png")
+                if os.path.exists(potential_path):
+                    image_path = potential_path
+                    break
         
         if not image_path:
-            # Try without index
-            image_path = os.path.join(image_output_dir, f"{prompt_id}.png")
-        
-        if not os.path.exists(image_path):
-            print(f"Warning: Image not found for prompt {prompt_id}: {image_path}")
+            print(f"Warning: Image not found for prompt {prompt_idx}: {samples_folder}")
             continue
         
         # Initialize tag tracking
