@@ -359,9 +359,9 @@ def main():
                         help='Path to directory containing generated images (for evaluation only)')
     parser.add_argument('--prompt_file', type=str, required=True,
                         help='Path to GenEval prompt JSONL file')
-    parser.add_argument('--detector_model_path', type=str, required=True,
+    parser.add_argument('--detector_model_path', type=str, default='',
                         help='Path to MMDetection model weights')
-    parser.add_argument('--detector_config_path', type=str, required=True,
+    parser.add_argument('--detector_config_path', type=str, default='',
                         help='Path to MMDetection config file')
     parser.add_argument('--class_names_file', type=str, 
                         help='Path to file containing class names')

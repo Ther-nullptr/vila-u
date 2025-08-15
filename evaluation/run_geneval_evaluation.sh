@@ -10,7 +10,7 @@ set -e  # Exit on any error
 # =============================================================================
 
 # Model paths (REQUIRED for generation mode)
-MODEL_PATH="/path/to/vila-u/model"  # Update this path
+MODEL_PATH="/home/wyj24/models/vila-u-7b-256/"  # Update this path
 
 # Output directory
 OUTPUT_DIR="./geneval_evaluation_results"
@@ -22,7 +22,7 @@ DETECTOR_CHECKPOINT="./checkpoints/mask2former_swin-s-p4-w7-224_lsj_8x2_50e_coco
 
 # GenEval settings
 DOWNLOAD_GENEVAL="--download_geneval"  # Download official GenEval metadata
-GENERATION_NUMS=1
+GENERATION_NUMS=4
 MAX_PROMPTS=""  # Set to limit prompts for testing, empty for full dataset
 
 # Generation settings
@@ -33,7 +33,7 @@ SEED=42
 THRESHOLD=0.3
 
 # Technical settings
-IMG_SIZE=1024
+IMG_SIZE=256
 MAX_TOKEN_LENGTH=300
 
 # Experiment tracking (optional)
