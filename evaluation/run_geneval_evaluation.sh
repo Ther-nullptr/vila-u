@@ -424,6 +424,8 @@ if [ "$GENERATE_ONLY" = true ]; then
     echo "✅ Image generation completed!"
     echo ""
     echo "Generated images saved to: $OUTPUT_DIR/generated_images/"
+    echo "  Structure: <prompt_idx>/samples/<sample_idx>.png"
+    echo "  Metadata: <prompt_idx>/metadata.jsonl"
     echo ""
     echo "To run evaluation on generated images:"
     echo "  ./run_geneval_evaluation.sh --evaluate-only \"$OUTPUT_DIR/generated_images\""
@@ -456,6 +458,8 @@ for key, value in data.items():
 print()
 print('📁 Results Location:')
 print(f'  • Generated Images: $OUTPUT_DIR/generated_images/')
+print(f'    Structure: <prompt_idx>/samples/<sample_idx>.png')
+print(f'    Metadata: <prompt_idx>/metadata.jsonl')
 print(f'  • Results: $OUTPUT_DIR/${EXP_NAME}_geneval_results.json')
 "
     echo ""
