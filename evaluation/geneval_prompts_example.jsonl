@@ -1,0 +1,10 @@
+{"tag": "single_object", "include": [{"class": "bench", "count": 1}], "prompt": "a photo of a bench"}
+{"tag": "single_object", "include": [{"class": "cow", "count": 1}], "prompt": "a photo of a cow"}
+{"tag": "single_object", "include": [{"class": "bicycle", "count": 1}], "prompt": "a photo of a bicycle"}
+{"tag": "single_object", "include": [{"class": "clock", "count": 1}], "prompt": "a photo of a clock"}
+{"tag": "single_object", "include": [{"class": "carrot", "count": 1}], "prompt": "a photo of a carrot"}
+{"tag": "two_object", "include": [{"class": "cat", "count": 1}, {"class": "dog", "count": 1}], "prompt": "a photo of a cat and a dog"}
+{"tag": "counting", "include": [{"class": "apple", "count": 3}], "prompt": "a photo of three apples"}
+{"tag": "colors", "include": [{"class": "car", "count": 1}], "prompt": "a photo of a red car"}
+{"tag": "position", "include": [{"class": "book", "count": 1}, {"class": "table", "count": 1}], "prompt": "a photo of a book on a table"}
+{"tag": "color_attr", "include": [{"class": "flower", "count": 2}], "prompt": "a photo of a red flower and a blue flower"}
