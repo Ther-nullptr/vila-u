@@ -10,15 +10,15 @@ set -e  # Exit on any error
 # =============================================================================
 
 # Model paths (REQUIRED for generation mode)
-MODEL_PATH="/path/to/vila-u/model"  # Update this path
+MODEL_PATH="/home/wyj24/models/vila-u-7b-256/"  # Update this path
 
 # Output directory
 OUTPUT_DIR="./mjhq_evaluation_results"
 DEVICE="cuda"
 
 # Dataset paths for MJHQ-30K evaluation
-MJHQ_METADATA="/path/to/MJHQ30K/meta_data.json"  # Update this path
-MJHQ_IMAGES="/path/to/MJHQ30K/mjhq30k_imgs"      # Update this path
+MJHQ_METADATA="/data/MJHQ-30K/meta_data.json"  # Update this path
+MJHQ_IMAGES="/data/MJHQ-30K/imgs"      # Update this path
 
 # Generation settings
 CFG_SCALE=3.0
