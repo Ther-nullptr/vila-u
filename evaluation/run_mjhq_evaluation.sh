@@ -31,7 +31,7 @@ MAX_SAMPLES=""            # Set to limit samples for testing, empty for all
 CLIP_MODEL="ViT-L/14"
 
 # Technical settings
-BATCH_SIZE=4
+BATCH_SIZE=4  # Batch size for image generation (1 for sequential, >1 for batch)
 
 # Experiment tracking (optional)
 EXP_NAME="vila_u_mjhq_evaluation"
@@ -164,6 +164,10 @@ while [[ $# -gt 0 ]]; do
             GENERATION_NUMS="$2"
             shift 2
             ;;
+        --batch-size)
+            BATCH_SIZE="$2"
+            shift 2
+            ;;
         --help|-h)
             echo "VILA-U MJHQ-30K Evaluation Script"
             echo ""
@@ -191,6 +195,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --device DEVICE           Device (default: cuda)"
             echo "  --clip-model MODEL        CLIP model (default: ViT-L/14)"
             echo "  --generation-nums N       Number of images per prompt (default: 1)"
+            echo "  --batch-size N            Batch size for generation (default: 4)"
             echo "  --generate-only           Only generate images"
             echo "  --evaluate-only           Only evaluate existing images"
             echo "  --fid-only                Only compute FID score"
@@ -206,6 +211,12 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "  # Generate images only"
             echo "  ./run_mjhq_evaluation.sh --generate-only --model-path /path/to/model"
+            echo ""
+            echo "  # Batch generation for faster processing"
+            echo "  ./run_mjhq_evaluation.sh --model-path /path/to/model --batch-size 8"
+            echo ""
+            echo "  # Sequential generation (batch-size 1)"
+            echo "  ./run_mjhq_evaluation.sh --model-path /path/to/model --batch-size 1"
             echo ""
             echo "  # Direct FID between two directories"
             echo "  ./run_mjhq_evaluation.sh --direct-fid /path/to/real/images /path/to/generated/images"
@@ -359,6 +370,7 @@ echo "  • Max samples: ${MAX_SAMPLES:-all}"
 echo "  • CFG scale: $CFG_SCALE"
 echo "  • Random seed: $SEED"
 echo "  • Generation nums: $GENERATION_NUMS"
+echo "  • Batch size: $BATCH_SIZE"
 echo "  • CLIP model: $CLIP_MODEL"
 echo ""
 
