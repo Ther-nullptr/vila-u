@@ -72,6 +72,23 @@ Download the MJHQ-30K dataset from Hugging Face:
     --output-dir ./results
 ```
 
+### Batch Generation
+```bash
+# Use batch generation for faster processing
+./run_mjhq_evaluation.sh \
+    --model-path /models/vila-u-7b \
+    --mjhq-metadata /data/meta_data.json \
+    --mjhq-images /data/mjhq30k_imgs \
+    --batch-size 8  # Process 8 prompts per batch
+
+# Sequential generation (batch-size 1)
+./run_mjhq_evaluation.sh \
+    --model-path /models/vila-u-7b \
+    --mjhq-metadata /data/meta_data.json \
+    --mjhq-images /data/mjhq30k_imgs \
+    --batch-size 1  # One prompt at a time
+```
+
 ### Quick Testing
 ```bash
 # Test with limited samples
@@ -145,7 +162,9 @@ python compute_fid_clip_mjhq.py \
 ### Evaluation Settings
 - `--clip-model`: CLIP model to use (default: ViT-L/14)
 - `--device`: Device for computation (default: cuda)
-- `--batch-size`: Batch size for generation
+- `--batch-size`: Batch size for generation (default: 4)
+  - `1`: Sequential generation (one prompt at a time)
+  - `>1`: Batch generation (multiple prompts per batch for faster processing)
 
 ### Output Settings
 - `--output-dir`: Directory for results and generated images
@@ -323,10 +342,20 @@ Key differences from HART evaluation:
 ## Performance Benchmarks
 
 Typical performance on MJHQ-30K "people" category (2500 samples):
-- **Generation Time**: ~1-2 hours (depending on model size and hardware)
+
+### Sequential Generation (batch-size=1)
+- **Generation Time**: ~2-3 hours (depending on model size and hardware)
 - **FID Computation**: ~5-10 minutes
 - **CLIP Computation**: ~10-15 minutes
-- **Total Evaluation**: ~2-3 hours for full pipeline
+- **Total Evaluation**: ~3-4 hours for full pipeline
+
+### Batch Generation (batch-size=4-8)
+- **Generation Time**: ~1-1.5 hours (30-50% faster than sequential)
+- **FID Computation**: ~5-10 minutes
+- **CLIP Computation**: ~10-15 minutes
+- **Total Evaluation**: ~1.5-2 hours for full pipeline
+
+**Note**: Batch generation provides significant speedup but requires more GPU memory. Optimal batch size depends on your GPU memory capacity and model size.
 
 ## Contributing
 

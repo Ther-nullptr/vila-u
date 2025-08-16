@@ -105,11 +105,20 @@ def filter_by_category(meta_data, category_filter=None):
     return filtered_data
 
 
-def generate_images_vila_u(model, meta_data, output_dir, cfg_scale=3.0, generation_nums=1, max_samples=None):
+def generate_images_vila_u(model, meta_data, output_dir, cfg_scale=3.0, generation_nums=1, max_samples=None, batch_size=1):
     """
-    Generate images using VILA-U model for MJHQ-30K prompts
+    Generate images using VILA-U model for MJHQ-30K prompts with batch support
+    
+    Args:
+        model: VILA-U model instance
+        meta_data: MJHQ metadata dictionary
+        output_dir: Output directory for generated images
+        cfg_scale: CFG scale for generation
+        generation_nums: Number of images per prompt
+        max_samples: Maximum number of samples to process
+        batch_size: Number of prompts to process in each batch
     """
-    print(f"Generating images with VILA-U model...")
+    print(f"Generating images with VILA-U model (batch_size={batch_size})...")
     
     os.makedirs(output_dir, exist_ok=True)
     
@@ -117,20 +126,78 @@ def generate_images_vila_u(model, meta_data, output_dir, cfg_scale=3.0, generati
     if max_samples:
         items = items[:max_samples]
     
-    for img_id, data in tqdm(items, desc="Generating MJHQ images"):
-        prompt = data['prompt']
-        category = data.get('category', ['general'])[0] if isinstance(data.get('category'), list) else data.get('category', 'general')
+    # Process in batches
+    total_batches = (len(items) + batch_size - 1) // batch_size
+    
+    for batch_idx in tqdm(range(total_batches), desc="Processing batches"):
+        start_idx = batch_idx * batch_size
+        end_idx = min(start_idx + batch_size, len(items))
+        batch_items = items[start_idx:end_idx]
         
-        try:
-            # Generate image using VILA-U
-            response = model.generate_image_content(prompt, cfg_scale, generation_nums)
+        if batch_size == 1:
+            # Single image generation (original behavior)
+            img_id, data = batch_items[0]
+            prompt = data['prompt']
+            category = data.get('category', ['general'])[0] if isinstance(data.get('category'), list) else data.get('category', 'general')
             
-            # Save generated images
-            save_images_vila_u(response, output_dir, img_id, category)
+            try:
+                # Generate image using VILA-U
+                response = model.generate_image_content(prompt, cfg_scale, generation_nums)
+                
+                # Save generated images
+                save_images_vila_u(response, output_dir, img_id, category)
+            
+            except Exception as e:
+                print(f"Error generating image for {img_id}: {e}")
+                continue
         
-        except Exception as e:
-            print(f"Error generating image for {img_id}: {e}")
-            continue
+        else:
+            # Batch image generation
+            batch_prompts = []
+            batch_metadata = []
+            
+            for img_id, data in batch_items:
+                prompt = data['prompt']
+                category = data.get('category', ['general'])[0] if isinstance(data.get('category'), list) else data.get('category', 'general')
+                
+                batch_prompts.append(prompt)
+                batch_metadata.append({
+                    'img_id': img_id,
+                    'category': category,
+                    'prompt': prompt
+                })
+            
+            try:
+                # Check if VILA-U supports batch generation
+                if hasattr(model, 'generate_image_content_batch'):
+                    # Use batch generation if available
+                    batch_responses = model.generate_image_content_batch(batch_prompts, cfg_scale, generation_nums)
+                    
+                    # Save batch generated images
+                    for i, (response, metadata) in enumerate(zip(batch_responses, batch_metadata)):
+                        save_images_vila_u(response, output_dir, metadata['img_id'], metadata['category'])
+                
+                else:
+                    # Fallback to sequential generation if batch not supported
+                    print(f"VILA-U batch generation not available, falling back to sequential for batch {batch_idx}")
+                    for metadata in batch_metadata:
+                        try:
+                            response = model.generate_image_content(metadata['prompt'], cfg_scale, generation_nums)
+                            save_images_vila_u(response, output_dir, metadata['img_id'], metadata['category'])
+                        except Exception as e:
+                            print(f"Error generating image for {metadata['img_id']}: {e}")
+                            continue
+            
+            except Exception as e:
+                print(f"Error processing batch {batch_idx}: {e}")
+                # Try to process items individually as fallback
+                for metadata in batch_metadata:
+                    try:
+                        response = model.generate_image_content(metadata['prompt'], cfg_scale, generation_nums)
+                        save_images_vila_u(response, output_dir, metadata['img_id'], metadata['category'])
+                    except Exception as e:
+                        print(f"Error generating image for {metadata['img_id']}: {e}")
+                        continue
 
 
 def compute_fid_score(real_dir, generated_dir, device='cuda'):
@@ -302,7 +369,7 @@ def main():
         generated_dir = os.path.join(args.output_dir, 'generated')
         generate_images_vila_u(
             model, meta_data, generated_dir, 
-            args.cfg_scale, args.generation_nums, args.max_samples
+            args.cfg_scale, args.generation_nums, args.max_samples, args.batch_size
         )
         
         if args.generate_only:
