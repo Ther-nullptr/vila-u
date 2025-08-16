@@ -1,6 +1,26 @@
-# VILA-U GenEval Evaluation Pipeline
+# VILA-U Image Generation Evaluation
 
-This evaluation pipeline provides compositional reasoning evaluation for VILA-U image generation models using the GenEval benchmark.
+This repository provides comprehensive evaluation pipelines for VILA-U image generation models using multiple benchmarks:
+
+## Available Evaluations
+
+### 1. GenEval - Compositional Reasoning
+Evaluates compositional understanding using object detection, counting, and spatial relationships.
+- **Script**: `run_geneval_evaluation.sh`
+- **Guide**: This README
+- **Metrics**: Object presence, counting accuracy, spatial relations
+
+### 2. MJHQ-30K - FID and CLIP Scores  
+Evaluates image quality and text-image alignment using the MJHQ-30K benchmark.
+- **Script**: `run_mjhq_evaluation.sh`
+- **Guide**: [README_MJHQ.md](README_MJHQ.md)
+- **Metrics**: FID Score, CLIP Score
+
+---
+
+# GenEval Compositional Evaluation
+
+This pipeline provides compositional reasoning evaluation for VILA-U image generation models using the GenEval benchmark.
 
 ## Overview
 
@@ -111,13 +131,17 @@ python evaluate_geneval.py \
 
 ```
 vila-u/evaluation/
-├── evaluate_geneval.py           # Main evaluation script
+├── evaluate_geneval.py           # GenEval compositional evaluation
+├── compute_fid_clip_mjhq.py      # MJHQ-30K FID and CLIP evaluation
 ├── utils.py                      # Utility functions for tracking
-├── run_geneval_evaluation.sh     # Convenient shell script
+├── run_geneval_evaluation.sh     # GenEval evaluation script
+├── run_mjhq_evaluation.sh        # MJHQ-30K evaluation script
 ├── demo_folder_structure.py      # Demo script for folder structure
-├── test_pipeline.py              # Pipeline testing script
-├── README.md                     # This file
-├── geneval_prompts_example.jsonl # Example prompt data
+├── test_pipeline.py              # GenEval pipeline testing
+├── test_mjhq_pipeline.py         # MJHQ-30K pipeline testing
+├── README.md                     # This file (GenEval evaluation)
+├── README_MJHQ.md               # MJHQ-30K evaluation guide
+├── geneval_prompts_example.jsonl # Example GenEval data
 └── checkpoints/                  # Auto-downloaded detection models
     └── mask2former_swin-s-p4-w7-224_lsj_8x2_50e_coco.pth
 ```
