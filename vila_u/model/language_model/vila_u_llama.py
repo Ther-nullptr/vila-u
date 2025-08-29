@@ -136,7 +136,7 @@ class VILAULlamaModel(VILAUMetaModel, VILAUMetaForCausalLM, PreTrainedModel):
             output_hidden_states if output_hidden_states is not None else self.llm.config.output_hidden_states
         )
         return_dict = return_dict if return_dict is not None else self.llm.config.use_return_dict
-
+        
         outputs = self.llm.model(
             input_ids=new_input_ids,
             attention_mask=new_attention_mask,

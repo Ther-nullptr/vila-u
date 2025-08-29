@@ -26,7 +26,7 @@ SEED=42
 GENERATION_NUMS=1
 
 # Evaluation settings
-CATEGORY_FILTER="people"  # Set to "" for all categories, or specify: people, animals, objects, etc.
+CATEGORY_FILTER="food"  # Set to "" for all categories, or specify: people, animals, objects, etc.
 MAX_SAMPLES=""            # Set to limit samples for testing, empty for all
 CLIP_MODEL="ViT-L/14"
 
@@ -85,8 +85,8 @@ DIRECT_CLIP=false
 REAL_PATH=""
 GEN_PATH=""
 METADATA_PATH=""
-GENERATE_ONLY=false
-EVALUATE_ONLY=false
+GENERATE_ONLY=true
+EVALUATE_ONLY=true
 FID_ONLY=false
 CLIP_ONLY=false
 
@@ -291,9 +291,9 @@ if [ "$DIRECT_CLIP" = true ]; then
     
     echo "Running direct CLIP score computation..."
     python compute_fid_clip_mjhq.py \
-        --model_path "dummy" \
+        --model_path $MODEL_PATH \
         --mjhq_metadata_path "$METADATA_PATH" \
-        --mjhq_images_path "dummy" \
+        --mjhq_images_path "$MJHQ_IMAGES" \
         --output_dir "$OUTPUT_DIR" \
         --device "$DEVICE" \
         --clip_model "$CLIP_MODEL" \
@@ -430,7 +430,7 @@ else
 fi
 echo ""
 
-eval "python compute_fid_clip_mjhq.py $EVAL_ARGS"
+eval "python compute_fid_clip_mjhq.py $EVAL_ARGS --model_path $MODEL_PATH"
 
 # Display results
 print_section "MJHQ Evaluation Results"

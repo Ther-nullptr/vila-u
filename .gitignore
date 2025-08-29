@@ -171,10 +171,10 @@ evaluation_output/
 evaluation_output_1024/
 
 *.json
-evaluation/src/
-evaluation/hart_evaluation_results/
 
-evaluation/checkpoints/
+runs/
+
 evaluation/geneval_evaluation_results/
-
-fid_evaluation_results/
+evaluation/mjhq_evaluation_results/
+evaluation/geneval_prompts.jsonl
+evaluation/checkpoints/

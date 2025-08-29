@@ -9,6 +9,8 @@ from transformers import (
     PreTrainedModel,
 )
 
+from .llama import LlamaForCausalLM, LlamaConfig
+
 
 def context_length_extension(config):
     orig_ctx_len = getattr(config, "max_position_embeddings", None)
@@ -34,9 +36,10 @@ def build_llm_and_tokenizer(
     if model_max_length is not None:
         context_length_extension(llm_cfg)
 
-    llm = AutoModelForCausalLM.from_pretrained(
+    llm = LlamaForCausalLM.from_pretrained(
         model_name_or_path, config=llm_cfg, torch_dtype=eval(config.model_dtype), *args, **kwargs
     )
+    print(llm)
     
     tokenizer = AutoTokenizer.from_pretrained(
         model_name_or_path, 

@@ -15,8 +15,7 @@ class RQVAESiglipModel(PreTrainedModel):
     config_class = RQVAESiglipConfig
     def __init__(self, config: RQVAESiglipConfig):
         super().__init__(config)
-
-        siglip_config = SiglipModel.config_class.from_pretrained(config.pretrained_model)
+        siglip_config = SiglipModel.config_class.from_pretrained('/home/wyj24/models/siglip-large-patch16-256')
         self.siglip_model = SiglipModel._from_config(siglip_config)
 
         self.quantizer = RQBottleneck(

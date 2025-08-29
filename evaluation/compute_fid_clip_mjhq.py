@@ -366,7 +366,7 @@ def main():
         model = vila_u.load(args.model_path)
         
         # Generate images
-        generated_dir = os.path.join(args.output_dir, 'generated')
+        generated_dir = os.path.join(args.output_dir, f'generated/{args.category_filter}')
         generate_images_vila_u(
             model, meta_data, generated_dir, 
             args.cfg_scale, args.generation_nums, args.max_samples, args.batch_size
@@ -384,8 +384,8 @@ def main():
     # Evaluation phase
     if not args.clip_only:
         # Compute FID score
-        real_dir = os.path.join(args.mjhq_images_path, args.category_filter or 'people')
-        fid_score = compute_fid_score(real_dir, generated_dir, args.device)
+        real_dir = os.path.join(args.mjhq_images_path, args.category_filter)
+        fid_score = compute_fid_score(real_dir, f'{generated_dir}/{args.category_filter}', args.device)
         
         if fid_score is not None:
             results['fid_score'] = fid_score
