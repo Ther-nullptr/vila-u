@@ -374,7 +374,32 @@ class LlamaAttention(nn.Module):
                 f" {attn_weights.size()}"
             )
 
-        # attn_weights = attn_weights + single_mask
+        if attention_mask is not None:
+            # Handle different attention mask formats
+            if attention_mask.dim() == 2 and attention_mask.size() == (bsz, kv_seq_len):
+                # FlashAttention format: (bsz, seq_len) -> convert to (bsz, 1, q_len, kv_seq_len)
+                # Create causal mask for the case where attention_mask is padding mask
+                if q_len == kv_seq_len:
+                    # For training/prefill phase, create full causal mask
+                    causal_mask = torch.triu(torch.full((q_len, kv_seq_len), float('-inf'), device=attention_mask.device), diagonal=1)
+                    # Expand padding mask to 4D and combine with causal mask
+                    padding_mask = attention_mask.unsqueeze(1).unsqueeze(1).expand(bsz, 1, q_len, kv_seq_len)
+                    # Apply padding mask (0 means masked, 1 means not masked)
+                    padding_mask = (1 - padding_mask) * float('-inf')
+                    attention_mask = causal_mask.unsqueeze(0) + padding_mask
+                else:
+                    # For inference/decode phase, only apply padding mask
+                    padding_mask = attention_mask.unsqueeze(1).unsqueeze(1).expand(bsz, 1, q_len, kv_seq_len)
+                    attention_mask = (1 - padding_mask) * float('-inf')
+            elif attention_mask.dim() == 4 and attention_mask.size() == (bsz, 1, q_len, kv_seq_len):
+                # Standard attention format: (bsz, 1, q_len, kv_seq_len) - use as is
+                pass
+            else:
+                raise ValueError(
+                    f"Attention mask should be of size {(bsz, kv_seq_len)} or {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+                )
+            
+            attn_weights = attn_weights + attention_mask
 
         # upcast attention to fp32
         attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
