@@ -381,16 +381,19 @@ class LlamaAttention(nn.Module):
                 # Create causal mask for the case where attention_mask is padding mask
                 if q_len == kv_seq_len:
                     # For training/prefill phase, create full causal mask
-                    causal_mask = torch.triu(torch.full((q_len, kv_seq_len), float('-inf'), device=attention_mask.device), diagonal=1)
+                    causal_mask = torch.triu(torch.full((q_len, kv_seq_len), float('-inf'), device=attention_mask.device, dtype=attn_weights.dtype), diagonal=1)
                     # Expand padding mask to 4D and combine with causal mask
                     padding_mask = attention_mask.unsqueeze(1).unsqueeze(1).expand(bsz, 1, q_len, kv_seq_len)
-                    # Apply padding mask (0 means masked, 1 means not masked)
-                    padding_mask = (1 - padding_mask) * float('-inf')
+                    # Convert to float and apply padding mask (0/False means masked, 1/True means not masked)
+                    padding_mask = padding_mask.to(dtype=attn_weights.dtype)
+                    padding_mask = torch.where(padding_mask == 0, float('-inf'), 0.0)
                     attention_mask = causal_mask.unsqueeze(0) + padding_mask
                 else:
                     # For inference/decode phase, only apply padding mask
                     padding_mask = attention_mask.unsqueeze(1).unsqueeze(1).expand(bsz, 1, q_len, kv_seq_len)
-                    attention_mask = (1 - padding_mask) * float('-inf')
+                    # Convert to float and apply padding mask
+                    padding_mask = padding_mask.to(dtype=attn_weights.dtype)
+                    attention_mask = torch.where(padding_mask == 0, float('-inf'), 0.0)
             elif attention_mask.dim() == 4 and attention_mask.size() == (bsz, 1, q_len, kv_seq_len):
                 # Standard attention format: (bsz, 1, q_len, kv_seq_len) - use as is
                 pass
